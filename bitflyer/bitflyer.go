@@ -50,7 +50,10 @@ func (self *Bitflyer) GetRates(targets []string) (map[string]*Rate, error) {
 			return nil, err
 		}
 		var r *Rate
-		if err := json.Unmarshal(ret, r); err != nil {
+		if err := json.Unmarshal(ret, &r); err != nil {
+			return nil, err
+		}
+		if err := r.parseFix(); err != nil {
 			return nil, err
 		}
 

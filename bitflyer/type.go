@@ -9,12 +9,14 @@ type storeStatus struct {
 }
 
 type Rate struct {
-	RawAsk     float64   `json:"best_ask"`
-	RawBid     float64   `json:"best_bid"`
-	RawProduct string    `json:"product_code"`
-	T          time.Time `json:"timestamp"`
-	RawVolume  float64   `json:"volume"`
-	RawLast    float64   `json:"last"`
+	RawAsk     float64 `json:"best_ask"`
+	RawBid     float64 `json:"best_bid"`
+	RawProduct string  `json:"product_code"`
+	RawTime    string  `json:"timestamp"`
+	RawVolume  float64 `json:"volume"`
+	RawLast    float64 `json:"last"`
+
+	time       time.Time
 }
 
 func (self *Rate) Ask() float64 {
@@ -30,7 +32,7 @@ func (self *Rate) ProductCode() string {
 }
 
 func (self *Rate) Time() time.Time {
-	return self.T
+	return self.time
 }
 
 func (self *Rate) Volume() float64 {
@@ -39,4 +41,14 @@ func (self *Rate) Volume() float64 {
 
 func (self *Rate) Last() float64 {
 	return self.RawLast
+}
+
+func (self *Rate) parseFix() error {
+	t, err := time.Parse("2006-01-02T15:04:05.999999999", self.RawTime)
+	if err != nil {
+		return err
+	}
+	self.time = t
+
+	return nil
 }
