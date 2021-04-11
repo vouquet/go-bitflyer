@@ -17,8 +17,8 @@ import (
 const (
 	URL_BASE     = "https://api.bitflyer.com/"
 
-	PRIVATE_LIMIT_MILLISEC int = 601 //https://lightning.bitflyer.com/docs/api?lang=ja#api%E5%88%B6%E9%99%90
-	PUBLICK_LIMIT_MILIISEC int = 601 //https://lightning.bitflyer.com/docs/api?lang=ja#api%E5%88%B6%E9%99%90
+	PRIVATE_LIMIT_MILLISEC int = 701 //https://lightning.bitflyer.com/docs/api?lang=ja#api%E5%88%B6%E9%99%90
+	PUBLICK_LIMIT_MILIISEC int = 701 //https://lightning.bitflyer.com/docs/api?lang=ja#api%E5%88%B6%E9%99%90
 )
 
 type Client struct {
