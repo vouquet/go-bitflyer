@@ -1,7 +1,5 @@
 package bitflyer
 
-import "log"
-
 import (
 	"fmt"
 	"sync"
@@ -132,7 +130,6 @@ func (self *Bitflyer) getOrders(p_code string, state string) ([]*Order, error) {
 	if err != nil {
 		return nil, err
 	}
-	log.Println(string(ret))
 	o := []*Order{}
 	if err := json.Unmarshal(ret, &o); err != nil {
 		return nil, err
