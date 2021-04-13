@@ -1,9 +1,12 @@
 package bitflyer
 
+import "log"
+
 import (
 	"fmt"
 	"sync"
 	"context"
+	"strconv"
 	"encoding/json"
 )
 
@@ -61,6 +64,102 @@ func (self *Bitflyer) GetRates(targets []string) (map[string]*Rate, error) {
 	}
 
 	return rates, nil
+}
+
+func (self *Bitflyer) LimitOrder(p_code string, o_type string, size float64, price float64) (string, error) {
+	self.lock()
+	defer self.unlock()
+
+	return self.spotOrder(p_code, o_type, MODE_LIMIT, size, price)
+}
+
+func (self *Bitflyer) MarketOrder(p_code string, o_type string, size float64) (string, error) {
+	self.lock()
+	defer self.unlock()
+
+	return self.spotOrder(p_code, o_type, MODE_MARKET, size, float64(0))
+}
+
+func (self *Bitflyer) spotOrder(p_code string, o_type string, mode string, size float64, price float64) (string, error) {
+	price_str := strconv.FormatFloat(price, 'f', -1, 64)
+	size_str := strconv.FormatFloat(size, 'f', -1, 64)
+
+	var order string
+	if mode == MODE_MARKET {
+		order = (`{"product_code" : "` + p_code + `", "child_order_type" : "` +
+				mode + `", "side":"` + o_type + `", "price": ` + price_str + `,
+				"size": ` + size_str + `}`)
+	}
+	if mode == MODE_LIMIT {
+		order = (`{"product_code" : "` + p_code + `", "child_order_type" : "` +
+				mode + `", "side":"` + o_type + `"size": ` + size_str + `}`)
+	}
+	if order == "" {
+		return "", fmt.Errorf("undefined mode '%s'", mode)
+	}
+
+	ret, err := self.request2PrivatePool("POST", "/v1/me/sendchildorder", "", []byte(order))
+	if err != nil {
+		return "", err
+	}
+	var r respOrder
+	if err := json.Unmarshal(ret, &r); err != nil {
+		return "", err
+	}
+	if r.Id == "" {
+		return "", fmt.Errorf("cannot get response id.")
+	}
+	return r.Id, nil
+}
+
+func (self *Bitflyer) GetOpenOrders(p_code string) ([]*Order, error) {
+	self.lock()
+	defer self.unlock()
+
+	return self.getOrders(p_code, ORDER_STATE_OPEN)
+}
+
+func (self *Bitflyer) GetClosedOrders(p_code string) ([]*Order, error) {
+	self.lock()
+	defer self.unlock()
+
+	return self.getOrders(p_code, ORDER_STATE_FIXED)
+}
+
+func (self *Bitflyer) getOrders(p_code string, state string) ([]*Order, error) {
+	param := "product_code=" + p_code + "&child_order_state=" + state
+	ret, err := self.request2PrivatePool("GET", "/v1/me/getchildorders", param, nil)
+	if err != nil {
+		return nil, err
+	}
+	log.Println(string(ret))
+	o := []*Order{}
+	if err := json.Unmarshal(ret, &o); err != nil {
+		return nil, err
+	}
+	return o, nil
+}
+
+func (self *Bitflyer) GetBalance(c_code string) (*Balance, error) {
+	self.lock()
+	defer self.unlock()
+
+	ret, err := self.request2PrivatePool("GET", "/v1/me/getbalance", "", nil)
+	if err != nil {
+		return nil, err
+	}
+
+	bs := []*Balance{}
+	if err := json.Unmarshal(ret, &bs); err != nil {
+		return nil, err
+	}
+	for _, b := range bs {
+		if b.Code != c_code {
+			continue
+		}
+		return b, nil
+	}
+	return nil, fmt.Errorf("cannot find '%s'", c_code)
 }
 
 func (self *Bitflyer) Close() error {

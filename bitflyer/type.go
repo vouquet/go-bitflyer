@@ -52,3 +52,21 @@ func (self *Rate) parseFix() error {
 
 	return nil
 }
+
+type Order struct {
+	Id      int64   `json:"id"`
+	Side    string  `json:"side"`
+	Product string  `json:"product_code"`
+	Price   float64 `json:"price"`
+	Size    float64 `json:"size"`
+}
+
+type Balance struct {
+	Code      string `json:"currency_code"`
+	Amount    float64 `json:"amount"`
+	Available float64 `json:"available"`
+}
+
+type respOrder struct {
+	Id string `json:"child_order_acceptance_id"`
+}

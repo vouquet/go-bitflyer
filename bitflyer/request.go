@@ -44,22 +44,22 @@ func (self *Client) NewRequest(method string, path string, param string, body []
 	}
 
 	t_stmp := NewTimestamp()
-	sig := self.genhmac([]byte(t_stmp.UnixString() + method + path + string(body)))
-
-	var url string
+	var pathparam string
 	if param == "" {
-		url = URL_BASE + path
+		pathparam = path
 	} else {
-		url = URL_BASE + path + "?" + param
+		pathparam = path + "?" + param
 	}
+	sig := self.genhmac([]byte(t_stmp.UnixString() + method + pathparam + string(body)))
+	url := URL_BASE + pathparam
 
 	req, err := http.NewRequest(method, url, bytes.NewReader(body))
 	if err != nil {
 		return nil, err
 	}
-	req.Header.Set("API-KEY", self.key)
-	req.Header.Set("API-TIMESTAMP", t_stmp.UnixString())
-	req.Header.Set("API-SIGN", string(sig))
+	req.Header.Set("ACCESS-KEY", self.key)
+	req.Header.Set("ACCESS-TIMESTAMP", t_stmp.UnixString())
+	req.Header.Set("ACCESS-SIGN", string(sig))
 	req.Header.Add("content-type", "application/json")
 	req.Header.Add("cache-control", "no-cache")
 
