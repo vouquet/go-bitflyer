@@ -50,9 +50,10 @@ func (self *Bitflyer) GetRates(targets []string) (map[string]*Rate, error) {
 		if err != nil {
 			return nil, err
 		}
+
 		var r *Rate
 		if err := json.Unmarshal(ret, &r); err != nil {
-			return nil, err
+			return nil, errorUnmarshal(ret)
 		}
 		if err := r.parseFix(); err != nil {
 			return nil, err
@@ -102,7 +103,7 @@ func (self *Bitflyer) spotOrder(p_code string, o_type string, mode string, size 
 	}
 	var r respOrder
 	if err := json.Unmarshal(ret, &r); err != nil {
-		return "", err
+		return "", errorUnmarshal(ret)
 	}
 	if r.Id == "" {
 		return "", fmt.Errorf("cannot get response id.")
@@ -132,7 +133,7 @@ func (self *Bitflyer) getOrders(p_code string, state string) ([]*Order, error) {
 	}
 	o := []*Order{}
 	if err := json.Unmarshal(ret, &o); err != nil {
-		return nil, err
+		return nil, errorUnmarshal(ret)
 	}
 	return o, nil
 }
@@ -148,7 +149,7 @@ func (self *Bitflyer) GetBalance(c_code string) (*Balance, error) {
 
 	bs := []*Balance{}
 	if err := json.Unmarshal(ret, &bs); err != nil {
-		return nil, err
+		return nil, errorUnmarshal(ret)
 	}
 	for _, b := range bs {
 		if b.Code != c_code {
@@ -177,7 +178,7 @@ func (self *Bitflyer) checkStatus() (bool, error) {
 	}
 	var s *storeStatus
 	if err := json.Unmarshal(ret, &s); err != nil {
-		return false, err
+		return false, errorUnmarshal(ret)
 	}
 
 	if s.Status != STATUS_OPEN {
@@ -208,4 +209,12 @@ func (self *Bitflyer) lock() {
 
 func (self *Bitflyer) unlock() {
 	self.mtx.Unlock()
+}
+
+func errorUnmarshal(b []byte) error {
+	var e *statusError
+	if err := json.Unmarshal(b, &e); err != nil {
+		return err
+	}
+	return e.Err()
 }

@@ -1,6 +1,7 @@
 package bitflyer
 
 import (
+	"fmt"
 	"time"
 )
 
@@ -69,4 +70,14 @@ type Balance struct {
 
 type respOrder struct {
 	Id string `json:"child_order_acceptance_id"`
+}
+
+type statusError struct {
+	Status int64  `json:"status"`
+	Msg    string `json:"error_message"`
+	Data   []byte `json:"data"`
+}
+
+func (self *statusError) Err() error {
+	return fmt.Errorf("Failed use api on Bitflyer. '%s'", self.Msg)
 }
