@@ -67,8 +67,10 @@ func (self *Client) NewRequest(method string, path string, param string, body []
 }
 
 func (self *Client) RunPool(ctx context.Context) {
-	tmr_pub := time.NewTicker(time.Millisecond * time.Duration(PUBLICK_LIMIT_MILIISEC))
-	tmr_pri := time.NewTicker(time.Millisecond * time.Duration(PRIVATE_LIMIT_MILLISEC))
+	t_pub := time.Millisecond * time.Duration(PUBLICK_LIMIT_MILIISEC)
+	t_pri := time.Millisecond * time.Duration(PRIVATE_LIMIT_MILLISEC)
+	tmr_pub := time.NewTicker(t_pub)
+	tmr_pri := time.NewTicker(t_pri)
 
 	go func() {
 		for {
@@ -89,6 +91,9 @@ func (self *Client) RunPool(ctx context.Context) {
 						continue
 					}
 					rq.Return(b)
+
+					tmr_pub.Stop()
+					tmr_pub.Reset(t_pub)
 				}
 			case rq := <- self.rq_pri_c:
 				select {
@@ -104,6 +109,9 @@ func (self *Client) RunPool(ctx context.Context) {
 						continue
 					}
 					rq.Return(b)
+
+					tmr_pri.Stop()
+					tmr_pri.Reset(t_pri)
 				}
 			}
 		}
