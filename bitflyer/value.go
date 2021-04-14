@@ -17,7 +17,7 @@ const (
 	CURRENCYCODE_XLM     string = "XLM"
 	CURRENCYCODE_MONA    string = "MONA"
 
-	FEE_TRADE_RATE       float64 = 0.15
+	FEE_TRADE_RATE       float64 = 0.0015
 
 
 	STATUS_OPEN string = "NORMAL"
