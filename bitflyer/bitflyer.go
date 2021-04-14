@@ -56,7 +56,7 @@ func (self *Bitflyer) GetRates(targets []string) (map[string]*Rate, error) {
 			return nil, errorUnmarshal(ret)
 		}
 		if err := r.parseFix(); err != nil {
-			return nil, err
+			return nil, errorUnmarshal(ret)
 		}
 
 		rates[target] = r
